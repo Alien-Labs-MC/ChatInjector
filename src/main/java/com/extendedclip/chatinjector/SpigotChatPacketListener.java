@@ -6,6 +6,7 @@ import net.md_5.bungee.chat.ComponentSerializer;
 
 import com.comphenix.protocol.PacketType.Play.Server;
 import com.comphenix.protocol.ProtocolLibrary;
+import com.comphenix.protocol.ProtocolManager;
 import com.comphenix.protocol.events.ListenerPriority;
 import com.comphenix.protocol.events.PacketAdapter;
 import com.comphenix.protocol.events.PacketEvent;
@@ -15,9 +16,10 @@ import me.clip.placeholderapi.PlaceholderAPI;
 import me.clip.placeholderapi.PlaceholderAPIPlugin;
 
 public class SpigotChatPacketListener extends PacketAdapter {
-    public SpigotChatPacketListener() {
-        super(PlaceholderAPIPlugin.getInstance(), ListenerPriority.HIGHEST, Server.CHAT);
-        ProtocolLibrary.getProtocolManager().addPacketListener(this);
+    public SpigotChatPacketListener(PlaceholderAPIPlugin plugin) {
+        super(plugin, ListenerPriority.HIGHEST, Server.CHAT);
+        ProtocolManager protocolManager = ProtocolLibrary.getProtocolManager();
+        protocolManager.addPacketListener(this);
     }
 
     public void onPacketSending(PacketEvent e) {

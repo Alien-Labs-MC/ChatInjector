@@ -3,6 +3,8 @@ package com.extendedclip.chatinjector;
 import org.bukkit.entity.Player;
 
 import com.comphenix.protocol.PacketType.Play.Server;
+import com.comphenix.protocol.ProtocolLibrary;
+import com.comphenix.protocol.ProtocolManager;
 import com.comphenix.protocol.events.ListenerPriority;
 import com.comphenix.protocol.events.PacketAdapter;
 import com.comphenix.protocol.events.PacketContainer;
@@ -13,8 +15,10 @@ import me.clip.placeholderapi.PlaceholderAPI;
 import me.clip.placeholderapi.PlaceholderAPIPlugin;
 
 public class ChatPacketListener extends PacketAdapter {
-    public ChatPacketListener() {
-        super(PlaceholderAPIPlugin.getInstance(), ListenerPriority.HIGHEST, Server.CHAT);
+    public ChatPacketListener(PlaceholderAPIPlugin plugin) {
+        super(plugin, ListenerPriority.HIGHEST, Server.CHAT);
+        ProtocolManager protocolManager = ProtocolLibrary.getProtocolManager();
+        protocolManager.addPacketListener(this);
     }
 
     public void onPacketSending(PacketEvent e) {

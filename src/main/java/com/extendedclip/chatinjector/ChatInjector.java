@@ -37,11 +37,12 @@ public final class ChatInjector extends JavaPlugin implements Listener {
             throw new RuntimeException("Failed to detect PlaceholderAPI.");
         }
 
+        PlaceholderAPIPlugin placeholderAPIPlugin = PlaceholderAPIPlugin.getInstance();
         Version serverVersion = PlaceholderAPIPlugin.getServerVersion();
         if (serverVersion.isSpigot()) {
-            this.chat = new SpigotChatPacketListener();
+            this.chat = new SpigotChatPacketListener(placeholderAPIPlugin);
         } else {
-            this.chat = new ChatPacketListener();
+            this.chat = new ChatPacketListener(placeholderAPIPlugin);
         }
 
         pluginManager.registerEvents(this, this);
