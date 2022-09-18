@@ -1,7 +1,11 @@
 package com.extendedclip.chatinjector;
 
+import org.bukkit.entity.Player;
+
+import com.comphenix.protocol.PacketType.Play.Server;
 import com.comphenix.protocol.events.ListenerPriority;
 import com.comphenix.protocol.events.PacketAdapter;
+import com.comphenix.protocol.events.PacketContainer;
 import com.comphenix.protocol.events.PacketEvent;
 import com.comphenix.protocol.reflect.StructureModifier;
 import com.comphenix.protocol.wrappers.WrappedChatComponent;
@@ -10,34 +14,33 @@ import me.clip.placeholderapi.PlaceholderAPIPlugin;
 
 public class ChatPacketListener extends PacketAdapter {
     public ChatPacketListener() {
-        super(PlaceholderAPIPlugin.getInstance(), ListenerPriority.HIGHEST, new com.comphenix.protocol.PacketType[]{com.comphenix.protocol.PacketType.Play.Server.CHAT});
+        super(PlaceholderAPIPlugin.getInstance(), ListenerPriority.HIGHEST, Server.CHAT);
     }
 
     public void onPacketSending(PacketEvent e) {
-        if (e.getPlayer() == null) {
+        Player player = e.getPlayer();
+        if (player == null) {
             return;
         }
 
-        StructureModifier<WrappedChatComponent> chat = e.getPacket().getChatComponents();
+        PacketContainer packet = e.getPacket();
+        StructureModifier<WrappedChatComponent> chat = packet.getChatComponents();
+        WrappedChatComponent component = chat.read(0);
 
-        WrappedChatComponent c = (WrappedChatComponent) chat.read(0);
-
-        if (c == null) {
+        if (component == null) {
             return;
         }
 
-        String msg = c.getJson();
-
-        if (msg == null) {
+        String messageJson = component.getJson();
+        if (messageJson == null) {
             return;
         }
 
-        if (!PlaceholderAPI.getBracketPlaceholderPattern().matcher(msg).find()) {
+        if (!PlaceholderAPI.getBracketPlaceholderPattern().matcher(messageJson).find()) {
             return;
         }
 
-        msg = PlaceholderAPI.setBracketPlaceholders(e.getPlayer(), msg);
-
-        chat.write(0, WrappedChatComponent.fromJson(msg));
+        messageJson = PlaceholderAPI.setBracketPlaceholders(player, messageJson);
+        chat.write(0, WrappedChatComponent.fromJson(messageJson));
     }
 }

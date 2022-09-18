@@ -1,8 +1,10 @@
 package com.extendedclip.chatinjector;
 
+import org.bukkit.entity.Player;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.chat.ComponentSerializer;
 
+import com.comphenix.protocol.PacketType.Play.Server;
 import com.comphenix.protocol.ProtocolLibrary;
 import com.comphenix.protocol.events.ListenerPriority;
 import com.comphenix.protocol.events.PacketAdapter;
@@ -14,57 +16,52 @@ import me.clip.placeholderapi.PlaceholderAPIPlugin;
 
 public class SpigotChatPacketListener extends PacketAdapter {
     public SpigotChatPacketListener() {
-        super(PlaceholderAPIPlugin.getInstance(), ListenerPriority.HIGHEST, new com.comphenix.protocol.PacketType[]{com.comphenix.protocol.PacketType.Play.Server.CHAT});
+        super(PlaceholderAPIPlugin.getInstance(), ListenerPriority.HIGHEST, Server.CHAT);
         ProtocolLibrary.getProtocolManager().addPacketListener(this);
     }
 
     public void onPacketSending(PacketEvent e) {
-        if (e.getPlayer() == null) {
+        Player player = e.getPlayer();
+        if (player == null) {
             return;
         }
 
         StructureModifier<WrappedChatComponent> chat = e.getPacket().getChatComponents();
-
-        WrappedChatComponent c = (WrappedChatComponent) chat.read(0);
-
-        if (c == null) {
+        WrappedChatComponent component = chat.read(0);
+        if (component == null) {
             StructureModifier<BaseComponent[]> modifier = e.getPacket().getSpecificModifier(BaseComponent[].class);
-
-            BaseComponent[] components = (BaseComponent[]) modifier.readSafely(0);
+            BaseComponent[] components = modifier.readSafely(0);
 
             if (components == null) {
                 return;
             }
 
-            String msg = ComponentSerializer.toString(components);
-
-            if (msg == null) {
+            String messageString = ComponentSerializer.toString(components);
+            if (messageString == null) {
                 return;
             }
 
-            if (!PlaceholderAPI.getBracketPlaceholderPattern().matcher(msg).find()) {
+            if (!PlaceholderAPI.getBracketPlaceholderPattern().matcher(messageString).find()) {
                 return;
             }
 
-            msg = PlaceholderAPI.setBracketPlaceholders(e.getPlayer(), msg);
+            messageString = PlaceholderAPI.setBracketPlaceholders(player, messageString);
 
-            modifier.write(0, ComponentSerializer.parse(msg));
+            modifier.write(0, ComponentSerializer.parse(messageString));
 
             return;
         }
 
-        String msg = c.getJson();
-
-        if (msg == null) {
+        String messageJson = component.getJson();
+        if (messageJson == null) {
             return;
         }
 
-        if (!PlaceholderAPI.getBracketPlaceholderPattern().matcher(msg).find()) {
+        if (!PlaceholderAPI.getBracketPlaceholderPattern().matcher(messageJson).find()) {
             return;
         }
 
-        msg = PlaceholderAPI.setBracketPlaceholders(e.getPlayer(), msg);
-
-        chat.write(0, WrappedChatComponent.fromJson(msg));
+        messageJson = PlaceholderAPI.setBracketPlaceholders(player, messageJson);
+        chat.write(0, WrappedChatComponent.fromJson(messageJson));
     }
 }
